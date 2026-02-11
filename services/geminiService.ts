@@ -3,16 +3,16 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Hadith, Source, Category } from "../types";
 
 export const searchAuthenticHadith = async (query: string): Promise<Hadith[]> => {
-  // فحص آمن لوجود المفتاح لمنع ReferenceError
+  // فحص آمن وشامل لوجود المفتاح
   let apiKey = '';
   try {
-    apiKey = (window as any).process?.env?.API_KEY || '';
+    apiKey = (window as any).process?.env?.API_KEY || (import.meta as any).env?.VITE_GEMINI_API_KEY || '';
   } catch (e) {
     apiKey = '';
   }
 
   if (!apiKey || !query) {
-    console.warn("API Key missing or empty query");
+    console.warn("API Key is missing or query is empty. Make sure API_KEY is set.");
     return [];
   }
 
@@ -20,7 +20,7 @@ export const searchAuthenticHadith = async (query: string): Promise<Hadith[]> =>
     const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `البحث عن أحاديث صحيحة 100% فقط من صحيحي البخاري ومسلم تتعلق بـ: "${query}". يجب أن تكون النتائج بتنسيق JSON دقيق وموثق.`,
+      contents: `ابحث عن أحاديث نبوية صحيحة حصراً من البخاري ومسلم تتعلق بـ: "${query}". يجب أن تكون النتائج بصيغة JSON دقيقة ومفصلة.`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -47,7 +47,7 @@ export const searchAuthenticHadith = async (query: string): Promise<Hadith[]> =>
     const jsonStr = response.text.trim();
     return JSON.parse(jsonStr);
   } catch (e) {
-    console.error("Gemini Error:", e);
+    console.error("Gemini API Error:", e);
     return [];
   }
 };
