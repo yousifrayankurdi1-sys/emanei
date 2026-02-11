@@ -17,6 +17,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage, user, onOpenAu
     { id: 'quran', label: 'القرآن الكريم' },
     { id: 'search', label: 'الأحاديث النبوية' },
     { id: 'remembrances', label: 'الأذكار والأدعية' },
+    { id: 'feedback', label: 'آراء الزوار' },
     { id: 'favorites', label: 'المفضلة' },
     ...(user?.isAdmin ? [{ id: 'admin', label: 'لوحة التحكم' }] : [])
   ];
@@ -35,12 +36,12 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage, user, onOpenAu
             </div>
           </div>
           
-          <div className="hidden lg:flex items-center space-x-reverse space-x-6">
+          <div className="hidden lg:flex items-center space-x-reverse space-x-4">
             {menuItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => onNavigate(item.id)}
-                className={`text-sm font-bold transition-all px-3 py-2 rounded-xl ${
+                className={`text-sm font-bold transition-all px-3 py-2 rounded-xl whitespace-nowrap ${
                   currentPage === item.id 
                   ? 'text-primary-700 bg-primary-50' 
                   : 'text-slate-500 hover:text-primary-600 hover:bg-slate-50'

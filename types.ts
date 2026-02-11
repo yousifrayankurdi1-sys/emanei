@@ -23,6 +23,14 @@ export interface Hadith {
   tags: string[];
 }
 
+export interface Comment {
+  id: string;
+  targetId: string;
+  userName: string;
+  text: string;
+  timestamp: number;
+}
+
 export interface Remembrance {
   id: string;
   title: string;

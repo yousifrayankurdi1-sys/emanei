@@ -7,10 +7,13 @@ import {
   getDoc, 
   addDoc,
   updateDoc,
-  deleteDoc
+  deleteDoc,
+  query,
+  where,
+  orderBy
 } from "firebase/firestore";
 import { db, firebaseReady } from "../firebase";
-import { Hadith, Remembrance } from "../types";
+import { Hadith, Remembrance, Comment } from "../types";
 
 // --- عمليات الأحاديث ---
 
@@ -46,6 +49,45 @@ export const deleteHadithFromFirebase = async (id: string) => {
     await deleteDoc(doc(db, "hadiths", id));
   } catch (error) {
     console.error("Error deleting hadith:", error);
+    throw error;
+  }
+};
+
+// --- عمليات التعليقات ---
+
+export const fetchCommentsByTarget = async (targetId: string): Promise<Comment[]> => {
+  if (!firebaseReady || !db) return [];
+  try {
+    const q = query(
+      collection(db, "comments"), 
+      where("targetId", "==", targetId),
+      orderBy("timestamp", "asc")
+    );
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Comment));
+  } catch (error) {
+    console.error("Error fetching comments:", error);
+    return [];
+  }
+};
+
+export const addCommentToFirebase = async (comment: Omit<Comment, 'id'>) => {
+  if (!firebaseReady || !db) return;
+  try {
+    const docRef = await addDoc(collection(db, "comments"), comment);
+    return docRef.id;
+  } catch (error) {
+    console.error("Error adding comment:", error);
+    throw error;
+  }
+};
+
+export const deleteCommentFromFirebase = async (id: string) => {
+  if (!firebaseReady || !db) return;
+  try {
+    await deleteDoc(doc(db, "comments", id));
+  } catch (error) {
+    console.error("Error deleting comment:", error);
     throw error;
   }
 };

@@ -58,168 +58,6 @@ export const SAMPLE_HADITHS: Hadith[] = [
     tags: ['الأخلاق', 'الجوار']
   },
   {
-    id: '7',
-    text: 'من صلى البردين دخل الجنة.',
-    narrator: 'أبو موسى الأشعري رضي الله عنه',
-    source: Source.AGREED,
-    number: '574',
-    category: Category.WORSHIP,
-    tags: ['الصلاة', 'الفجر', 'العصر']
-  },
-  {
-    id: '8',
-    text: 'الدين النصيحة، قلنا: لمن؟ قال: لله ولكتابه ولرسوله ولأئمة المسلمين وعامتهم.',
-    narrator: 'تميم الداري رضي الله عنه',
-    source: Source.MUSLIM,
-    number: '55',
-    category: Category.GENERAL,
-    tags: ['النصيحة']
-  },
-  {
-    id: '9',
-    text: 'لا يدخل الجنة من كان في قلبه مثقال ذرة من كبر.',
-    narrator: 'عبدالله بن مسعود رضي الله عنه',
-    source: Source.MUSLIM,
-    number: '91',
-    category: Category.MORALS,
-    tags: ['الكبر', 'الأخلاق']
-  },
-  {
-    id: '10',
-    text: 'أحب البلاد إلى الله مساجدها، وأبغض البلاد إلى الله أسواقها.',
-    narrator: 'أبو هريرة رضي الله عنه',
-    source: Source.MUSLIM,
-    number: '671',
-    category: Category.WORSHIP,
-    tags: ['المساجد']
-  },
-  {
-    id: '11',
-    text: 'يسروا ولا تعسروا، وبشروا ولا تنفروا.',
-    narrator: 'أنس بن مالك رضي الله عنه',
-    source: Source.BUKHARI,
-    number: '69',
-    category: Category.MORALS,
-    tags: ['التيسير']
-  },
-  {
-    id: '12',
-    text: 'أكمل المؤمنين إيمانا أحسنهم خلقا.',
-    narrator: 'أبو هريرة رضي الله عنه',
-    source: Source.AGREED,
-    number: '1162',
-    category: Category.MORALS,
-    tags: ['الأخلاق', 'الإيمان']
-  },
-  {
-    id: '13',
-    text: 'سبعة يظلهم الله في ظله يوم لا ظل إلا ظله: إمام عادل، وشاب نشأ في عبادة الله، ورجل قلبه معلق بالمساجد، ورجلان تحابا في الله اجتمعا عليه وتفرقا عليه، ورجل دعته امرأة ذات منصب وجمال فقال إني أخاف الله، ورجل تصدق بصدقة فأخفاها حتى لا تعلم شماله ما تنفق يمينه، ورجل ذكر الله خالياً ففاضت عيناه.',
-    narrator: 'أبو هريرة رضي الله عنه',
-    source: Source.AGREED,
-    number: '660',
-    category: Category.GENERAL,
-    tags: ['الآخرة', 'المساجد', 'الإخلاص']
-  },
-  {
-    id: '14',
-    text: 'الطهور شطر الإيمان، والحمد لله تملأ الميزان، وسبحان الله والحمد لله تملآن - أو تملأ - ما بين السماوات والأرض، والصلاة نور، والصدقة برهان، والصبر ضياء، والقرآن حجة لك أو عليك، كل الناس يغدو فبائع نفسه فمعتقها أو موبقها.',
-    narrator: 'أبو مالك الأشعري رضي الله عنه',
-    source: Source.MUSLIM,
-    number: '223',
-    category: Category.WORSHIP,
-    tags: ['النظافة', 'الذكر', 'الصلاة']
-  },
-  {
-    id: '15',
-    text: 'من يرد الله به خيرا يفقهه في الدين.',
-    narrator: 'معاوية بن أبي سفيان رضي الله عنه',
-    source: Source.BUKHARI,
-    number: '71',
-    category: Category.GENERAL,
-    tags: ['العلم', 'الفقه']
-  },
-  {
-    id: '16',
-    text: 'بني الإسلام على خمس: شهادة أن لا إله إلا الله وأن محمدا رسول الله، وإقام الصلاة، وإيتاء الزكاة، والحج، وصوم رمضان.',
-    narrator: 'ابن عمر رضي الله عنهما',
-    source: Source.AGREED,
-    number: '8',
-    category: Category.AQIDAH,
-    tags: ['أركان الإسلام']
-  },
-  {
-    id: '17',
-    text: 'خياركم خياركم لنسائهم.',
-    narrator: 'أبو هريرة رضي الله عنه',
-    source: Source.AGREED,
-    number: '1162',
-    category: Category.MORALS,
-    tags: ['الأخلاق', 'النساء']
-  },
-  {
-    id: '18',
-    text: 'المسلم من سلم المسلمون من لسانه ويده، والمهاجر من هجر ما نهى الله عنه.',
-    narrator: 'عبدالله بن عمرو رضي الله عنهما',
-    source: Source.BUKHARI,
-    number: '10',
-    category: Category.MORALS,
-    tags: ['الأخلاق', 'الهجرة']
-  },
-  {
-    id: '19',
-    text: 'من غشنا فليس منا.',
-    narrator: 'أبو هريرة رضي الله عنه',
-    source: Source.MUSLIM,
-    number: '101',
-    category: Category.TRANSACTIONS,
-    tags: ['الأمانة', 'الغش']
-  },
-  {
-    id: '20',
-    text: 'اتقوا النار ولو بشق تمرة، فمن لم يجد فبكلمة طيبة.',
-    narrator: 'عدي بن حاتم رضي الله عنه',
-    source: Source.BUKHARI,
-    number: '1417',
-    category: Category.WORSHIP,
-    tags: ['الصدقة', 'الكلمة الطيبة']
-  },
-  {
-    id: '21',
-    text: 'من صلى علي واحدة صلى الله عليه بها عشرا.',
-    narrator: 'أبو هريرة رضي الله عنه',
-    source: Source.MUSLIM,
-    number: '408',
-    category: Category.GENERAL,
-    tags: ['الصلاة على النبي']
-  },
-  {
-    id: '22',
-    text: 'آية المنافق ثلاث: إذا حدث كذب، وإذا وعد أخلف، وإذا اؤتمن خان.',
-    narrator: 'أبو هريرة رضي الله عنه',
-    source: Source.AGREED,
-    number: '33',
-    category: Category.MORALS,
-    tags: ['النفاق', 'الأمانة']
-  },
-  {
-    id: '23',
-    text: 'من دل على خير فله مثل أجر فاعله.',
-    narrator: 'أبو مسعود الأنصاري رضي الله عنه',
-    source: Source.MUSLIM,
-    number: '1893',
-    category: Category.GENERAL,
-    tags: ['الدعوة', 'الأجر']
-  },
-  {
-    id: '24',
-    text: 'الحياء لا يأتي إلا بخير.',
-    narrator: 'عمران بن حصين رضي الله عنه',
-    source: Source.AGREED,
-    number: '37',
-    category: Category.MORALS,
-    tags: ['الحياء', 'الأخلاق']
-  },
-  {
     id: '25',
     text: 'من كذب علي متعمدا فليتبوأ مقعده من النار.',
     narrator: 'أبو هريرة رضي الله عنه',
@@ -254,11 +92,6 @@ export const AUTHENTIC_REMEMBRANCES: Remembrance[] = [
 export const SURAHS: Surah[] = [
   { number: 1, name: "الفاتحة", englishName: "Al-Fatihah", numberOfAyahs: 7, revelationType: "Meccan" },
   { number: 2, name: "البقرة", englishName: "Al-Baqarah", numberOfAyahs: 286, revelationType: "Medinan" },
-  { number: 3, name: "آل عمران", englishName: "Al-Imran", numberOfAyahs: 200, revelationType: "Medinan" },
-  { number: 4, name: "النساء", englishName: "An-Nisa", numberOfAyahs: 176, revelationType: "Medinan" },
-  { number: 18, name: "الكهف", englishName: "Al-Kahf", numberOfAyahs: 110, revelationType: "Meccan" },
-  { number: 36, name: "يس", englishName: "Ya-Sin", numberOfAyahs: 83, revelationType: "Meccan" },
-  { number: 67, name: "الملك", englishName: "Al-Mulk", numberOfAyahs: 30, revelationType: "Meccan" },
   { number: 114, name: "الناس", englishName: "Al-Nas", numberOfAyahs: 6, revelationType: "Meccan" }
 ];
 
@@ -273,6 +106,11 @@ export const Icons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
     </svg>
   ),
+  Comment: () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+    </svg>
+  ),
   Check: () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -281,18 +119,6 @@ export const Icons = {
   Refresh: () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-    </svg>
-  ),
-  Menu: () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-    </svg>
-  ),
-  Mic: () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 10v1a7 7 0 01-14 0v-1m14 0a7 7 0 00-14 0m14 0v1a7 7 0 01-14 0v-1" />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18v4m0 0H9m3 0h3" />
     </svg>
   ),
   Book: () => (

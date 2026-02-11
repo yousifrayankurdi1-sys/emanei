@@ -6,6 +6,7 @@ import QuranBrowser from './components/QuranBrowser';
 import RemembranceSection from './components/RemembranceSection';
 import AdminPanel from './components/AdminPanel';
 import AuthModal from './components/AuthModal';
+import SiteFeedback from './components/SiteFeedback';
 import { Hadith, User, Remembrance } from './types';
 import { Icons, SAMPLE_HADITHS, AUTHENTIC_REMEMBRANCES } from './constants';
 import { 
@@ -44,7 +45,6 @@ const App: React.FC = () => {
         fetchRemembrancesFromFirebase()
       ]);
       
-      // دمج الأحاديث المحلية مع أحاديث فايربيز
       const combined = [...SAMPLE_HADITHS];
       firebaseHadiths.forEach(fh => {
         if (!combined.find(c => c.id === fh.id)) combined.push(fh);
@@ -224,6 +224,7 @@ const App: React.FC = () => {
                       onToggleFavorite={toggleFavorite} 
                       onEdit={() => handleEditRequest('hadith', h)} 
                       showEdit={!!user?.isAdmin} 
+                      currentUser={user}
                     />
                   </div>
                 ))}
@@ -241,6 +242,8 @@ const App: React.FC = () => {
 
         {currentPage === 'remembrances' && <RemembranceSection favorites={remembranceFavs} onToggleFavorite={toggleRemembranceFav} initialTab={jumpToAzkarTab} onEdit={(r) => handleEditRequest('remembrance', r)} showEdit={!!user?.isAdmin} />}
         
+        {currentPage === 'feedback' && <SiteFeedback currentUser={user} onOpenAuth={() => setIsAuthModalOpen(true)} />}
+
         {currentPage === 'favorites' && (
           <div className="max-w-4xl mx-auto space-y-6">
              <h2 className="text-3xl font-black mb-6 text-slate-900">المفضلة والمحفوظات</h2>
@@ -249,7 +252,14 @@ const App: React.FC = () => {
                <div className="flex flex-col space-y-0.5">
                  {allHadiths.filter(h => favorites.includes(h.id)).map((h, idx, arr) => (
                    <div key={h.id} className={idx === arr.length - 1 ? "rounded-b-2xl overflow-hidden shadow-sm" : idx === 0 ? "rounded-t-2xl overflow-hidden" : ""}>
-                     <HadithCard hadith={h} isFavorite={true} onToggleFavorite={toggleFavorite} onEdit={() => handleEditRequest('hadith', h)} showEdit={!!user?.isAdmin} />
+                     <HadithCard 
+                        hadith={h} 
+                        isFavorite={true} 
+                        onToggleFavorite={toggleFavorite} 
+                        onEdit={() => handleEditRequest('hadith', h)} 
+                        showEdit={!!user?.isAdmin} 
+                        currentUser={user}
+                      />
                    </div>
                  ))}
                  {favorites.length === 0 && <div className="p-16 text-center bg-white rounded-2xl border border-dashed text-slate-300 font-bold">المفضلة فارغة حالياً.</div>}
