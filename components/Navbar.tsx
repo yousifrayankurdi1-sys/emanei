@@ -12,6 +12,15 @@ interface NavbarProps {
 }
 
 const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage, user, onOpenAuth, onLogout }) => {
+  const menuItems = [
+    { id: 'home', label: 'الرئيسية' },
+    { id: 'quran', label: 'القرآن الكريم' },
+    { id: 'search', label: 'السنة النبوية' },
+    { id: 'remembrances', label: 'الأذكار والأدعية' },
+    { id: 'favorites', label: 'المفضلة' },
+    ...(user?.isAdmin ? [{ id: 'admin', label: 'لوحة التحكم' }] : [])
+  ];
+
   return (
     <nav className="bg-white border-b relative z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -27,13 +36,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage, user, onOpenAu
           </div>
           
           <div className="hidden lg:flex items-center space-x-reverse space-x-6">
-            {[
-              { id: 'home', label: 'الرئيسية' },
-              { id: 'quran', label: 'القرآن الكريم' },
-              { id: 'search', label: 'السنة النبوية' },
-              { id: 'remembrances', label: 'الأذكار والأدعية' },
-              { id: 'favorites', label: 'المفضلة' },
-            ].map((item) => (
+            {menuItems.map((item) => (
               <button
                 key={item.id}
                 onClick={() => onNavigate(item.id)}
@@ -50,23 +53,27 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage, user, onOpenAu
 
           <div className="flex items-center gap-3">
             {user?.isLoggedIn ? (
-              <div className="flex items-center gap-3 bg-slate-50 pr-4 pl-1 py-1 rounded-2xl border border-slate-100">
+              <div className="flex items-center gap-3 bg-slate-50 pr-4 pl-1 py-1 rounded-2xl border border-slate-100 shadow-sm">
                 <div className="flex flex-col text-right">
-                  <span className="text-xs font-black text-slate-900 leading-none">{user.name}</span>
-                  <button onClick={onLogout} className="text-[10px] text-red-500 hover:underline font-bold text-right">خروج</button>
+                  {user.isAdmin && (
+                    <span className="text-[10px] font-black text-primary-600 block leading-none mb-1 animate-pulse">المشرف</span>
+                  )}
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm font-black text-slate-900 leading-none">{user.name}</span>
+                    {user.isAdmin && <div className="w-1.5 h-1.5 bg-primary-500 rounded-full"></div>}
+                  </div>
+                  <button onClick={onLogout} className="text-[10px] text-red-500 hover:underline font-bold text-right mt-1">خروج</button>
                 </div>
-                <div className="w-9 h-9 bg-primary-100 text-primary-700 rounded-xl flex items-center justify-center font-black">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg ${user.isAdmin ? 'bg-primary-600 text-white shadow-lg shadow-primary-200' : 'bg-primary-100 text-primary-700'}`}>
                   {user.name[0]}
                 </div>
               </div>
             ) : (
               <button 
                 onClick={onOpenAuth}
-                className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl font-black transition-all shadow-md active:scale-95 whitespace-nowrap"
+                className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl font-black transition-all shadow-lg active:scale-95 whitespace-nowrap"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                </svg>
+                <Icons.Check />
                 <span className="text-sm">تسجيل دخول</span>
               </button>
             )}

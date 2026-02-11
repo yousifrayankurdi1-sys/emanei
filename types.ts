@@ -44,6 +44,7 @@ export interface Surah {
 export interface User {
   name: string;
   isLoggedIn: boolean;
+  isAdmin?: boolean;
 }
 
 export interface SearchState {

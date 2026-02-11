@@ -7,9 +7,11 @@ interface HadithCardProps {
   hadith: Hadith;
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
+  onEdit?: () => void;
+  showEdit?: boolean;
 }
 
-const HadithCard: React.FC<HadithCardProps> = ({ hadith, isFavorite, onToggleFavorite }) => {
+const HadithCard: React.FC<HadithCardProps> = ({ hadith, isFavorite, onToggleFavorite, onEdit, showEdit }) => {
   const getSourceColor = (source: Source) => {
     switch (source) {
       case Source.BUKHARI: return 'bg-emerald-100 text-emerald-800 border-emerald-200';
@@ -29,12 +31,17 @@ const HadithCard: React.FC<HadithCardProps> = ({ hadith, isFavorite, onToggleFav
           <span className="px-4 py-1.5 rounded-full bg-slate-50 text-slate-600 text-xs font-bold border border-slate-200">
             رقم: {hadith.number}
           </span>
-          <span className="px-4 py-1.5 rounded-full bg-primary-50 text-primary-700 text-xs font-black border border-primary-100 flex items-center gap-1">
-            <Icons.Check />
-            صحيح
-          </span>
         </div>
-        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          {showEdit && onEdit && (
+            <button 
+              onClick={onEdit}
+              className="p-2.5 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all"
+              title="تعديل هذا الحديث"
+            >
+              <Icons.Refresh />
+            </button>
+          )}
           <button 
             onClick={() => onToggleFavorite(hadith.id)}
             className={`p-2.5 rounded-xl transition-all ${isFavorite ? 'text-red-500 bg-red-50' : 'text-slate-400 hover:bg-slate-50'}`}
