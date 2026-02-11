@@ -22,22 +22,23 @@ const SurahReader: React.FC<{ surah: Surah; onBack: () => void }> = ({ surah, on
   useEffect(() => {
     let isMounted = true;
     const fetchSurahData = async () => {
+      if (!surah) return;
       setLoading(true);
       setError(null);
       try {
         const response = await fetch(`https://api.alquran.cloud/v1/surah/${surah.number}`);
-        if (!response.ok) throw new Error('Network response was not ok');
+        if (!response.ok) throw new Error('فشل الاتصال بخادم القرآن');
         const data = await response.json();
         
         if (isMounted) {
           if (data && data.code === 200 && data.data && data.data.ayahs) {
             setAyahs(data.data.ayahs);
           } else {
-            setError('تعذر العثور على بيانات السورة.');
+            setError('تعذر العثور على بيانات هذه السورة.');
           }
         }
       } catch (err) {
-        if (isMounted) setError('حدث خطأ أثناء تحميل السورة. يرجى التحقق من اتصالك.');
+        if (isMounted) setError('حدث خطأ أثناء تحميل السورة. يرجى التأكد من اتصال الإنترنت.');
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -47,40 +48,31 @@ const SurahReader: React.FC<{ surah: Surah; onBack: () => void }> = ({ surah, on
     return () => { isMounted = false; };
   }, [surah.number]);
 
-  // منطق تنظيف نص الآية من البسملة لضمان عدم التكرار
-  const getCleanedAyahText = (ayah: Ayah) => {
-    // 1. الفاتحة (1) والتوبة (9) تظهر كما هي بدون تعديل
+  // دالة لتنظيف نص الآية الأولى من البسملة المدمجة لضمان جمالية العرض
+  const getCleanedText = (ayah: Ayah) => {
     if (surah.number === 1 || surah.number === 9) return ayah.text;
-
-    // 2. في السور الأخرى، الآية الأولى تحتوي عادة على البسملة في البداية
+    
     if (ayah.numberInSurah === 1) {
-      const bismillahPatterns = [
-        "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",
-        "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
-        "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيم"
-      ];
-
-      let cleanedText = ayah.text;
-      for (const pattern of bismillahPatterns) {
-        if (cleanedText.startsWith(pattern)) {
-          cleanedText = cleanedText.replace(pattern, "").trim();
-          break;
-        }
-      }
+      const bismillahStandard = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
+      const bismillahSimple = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ";
       
-      // إذا كانت الآية هي البسملة فقط (نادر في بعض المصاحف الرقمية)، نرجع فراغاً
-      return cleanedText;
+      let cleaned = ayah.text;
+      if (cleaned.startsWith(bismillahStandard)) {
+        cleaned = cleaned.replace(bismillahStandard, "").trim();
+      } else if (cleaned.startsWith(bismillahSimple)) {
+        cleaned = cleaned.replace(bismillahSimple, "").trim();
+      }
+      return cleaned;
     }
-
     return ayah.text;
   };
 
   if (error) {
     return (
       <div className="max-w-xl mx-auto py-20 text-center">
-        <div className="bg-red-50 p-8 rounded-3xl border border-red-100">
+        <div className="bg-red-50 p-8 rounded-[2rem] border border-red-100">
           <p className="text-red-600 font-bold mb-4">{error}</p>
-          <button onClick={onBack} className="bg-red-600 text-white px-6 py-2 rounded-xl font-bold">العودة للخلف</button>
+          <button onClick={onBack} className="bg-red-600 text-white px-8 py-2 rounded-xl font-bold">العودة للسور</button>
         </div>
       </div>
     );
@@ -92,7 +84,7 @@ const SurahReader: React.FC<{ surah: Surah; onBack: () => void }> = ({ surah, on
         onClick={onBack}
         className="flex items-center gap-2 text-primary-700 font-bold mb-8 hover:opacity-70 transition-opacity bg-white px-6 py-3 rounded-2xl shadow-sm border border-slate-50"
       >
-        <span>← قائمة السور</span>
+        <span>← عودة لقائمة السور</span>
       </button>
 
       <div className="bg-white rounded-[3rem] p-8 md:p-16 shadow-sm border border-slate-100 overflow-hidden">
@@ -108,27 +100,27 @@ const SurahReader: React.FC<{ surah: Surah; onBack: () => void }> = ({ surah, on
         {loading ? (
           <div className="py-24 text-center">
             <div className="w-14 h-14 border-[5px] border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-            <p className="text-slate-400 font-black text-xl">جاري استحضار الآيات...</p>
+            <p className="text-slate-400 font-black text-xl">جاري تحميل آيات الذكر الحكيم...</p>
           </div>
         ) : (
           <div className="quran-reader-container">
-            {/* عرض البسملة كعنوان جمالي مستقل (إلا في الفاتحة والتوبة) */}
+            {/* عرض البسملة كعنوان جمالي مستقل (إلا في الفاتحة والتوبة) كما طلبت */}
             {surah.number !== 1 && surah.number !== 9 && (
-              <div className="basmala text-center mb-12 animate-in fade-in slide-in-from-top duration-700">
+              <div className="basmala">
                 بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
               </div>
             )}
 
             <div className="quran-text text-3xl md:text-5xl text-slate-800 text-center leading-[2.5] select-none">
               {ayahs.map((ayah) => {
-                const cleanedText = getCleanedAyahText(ayah);
-                // إذا كانت الآية الأولى عبارة عن بسملة فقط وتم تنظيفها بالكامل، لا نعرض فراغاً
-                if (!cleanedText && ayah.numberInSurah === 1) return null;
+                const text = getCleanedText(ayah);
+                // منع عرض فراغ إذا كانت الآية هي البسملة فقط
+                if (!text && ayah.numberInSurah === 1) return null;
 
                 return (
-                  <span key={ayah.number} className="inline group hover:bg-primary-50/30 transition-colors rounded-xl px-1">
-                    <span className="relative">{cleanedText}</span>
-                    <span className="ayah-number select-none">{ayah.numberInSurah}</span>
+                  <span key={ayah.number} className="inline group hover:bg-primary-50/40 transition-colors rounded-xl px-1">
+                    <span>{text}</span>
+                    <span className="ayah-number">{ayah.numberInSurah}</span>
                   </span>
                 );
               })}
@@ -157,7 +149,7 @@ const QuranBrowser: React.FC<QuranBrowserProps> = ({ bookmarks, onToggleBookmark
         <div className="max-w-xl mx-auto relative px-4">
           <input 
             type="text" 
-            placeholder="ابحث عن اسم السورة..."
+            placeholder="ابحث عن سورة..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full h-16 px-8 rounded-2xl bg-white border border-slate-200 shadow-sm focus:ring-4 focus:ring-primary-500/10 transition-all font-bold text-lg text-center"
@@ -183,8 +175,6 @@ const QuranBrowser: React.FC<QuranBrowserProps> = ({ bookmarks, onToggleBookmark
             </div>
             <h3 className="text-2xl font-serif font-black text-slate-800 group-hover:text-primary-700 transition-colors">سورة {surah.name}</h3>
             <p className="text-slate-400 text-sm mt-2 font-bold">{surah.numberOfAyahs} آية</p>
-            
-            <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-primary-50 rounded-full opacity-0 group-hover:opacity-100 transition-all blur-2xl"></div>
           </button>
         ))}
       </div>

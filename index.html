@@ -8,6 +8,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+    <script>
+      // منع انهيار التطبيق (الشاشة البيضاء) في المتصفح بسبب process.env
+      window.process = window.process || { env: {} };
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -57,8 +61,8 @@
         color: #1e293b;
         margin-bottom: 2rem;
         padding-bottom: 1.5rem;
-        border-bottom: 2px border-gold-100;
         text-align: center;
+        border-bottom: 1px solid rgba(212, 175, 55, 0.1);
       }
       .gradient-bg {
         background: linear-gradient(135deg, #14532d 0%, #166534 100%);
@@ -70,7 +74,7 @@
         width: 3rem;
         height: 3rem;
         margin: 0 0.75rem;
-        border: 2px solid rgba(212, 175, 55, 0.3);
+        border: 1px solid rgba(212, 175, 55, 0.4);
         border-radius: 999px;
         font-family: 'Tajawal', sans-serif;
         font-size: 0.9rem;
