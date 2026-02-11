@@ -1,26 +1,22 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { Hadith, Source, Category } from "../types";
+import { Hadith } from "../types";
 
 export const searchAuthenticHadith = async (query: string): Promise<Hadith[]> => {
-  // فحص آمن وشامل لوجود المفتاح
-  let apiKey = '';
-  try {
-    apiKey = (window as any).process?.env?.API_KEY || (import.meta as any).env?.VITE_GEMINI_API_KEY || '';
-  } catch (e) {
-    apiKey = '';
-  }
+  // استخدام مفتاح API من البيئة مباشرة كما تقتضي التعليمات
+  const apiKey = process.env.API_KEY;
 
-  if (!apiKey || !query) {
-    console.warn("API Key is missing or query is empty. Make sure API_KEY is set.");
-    return [];
+  if (!apiKey) {
+    throw new Error("API_KEY_MISSING");
   }
 
   try {
     const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `ابحث عن أحاديث نبوية صحيحة حصراً من البخاري ومسلم تتعلق بـ: "${query}". يجب أن تكون النتائج بصيغة JSON دقيقة ومفصلة.`,
+      contents: `بصفتك خبير في السنة النبوية، ابحث في صحيح البخاري وصحيح مسلم فقط عن أحاديث تتعلق بـ: "${query}". 
+      يجب أن تكون النتيجة بتنسيق JSON حصراً كقائمة من الكائنات.
+      كل كائن يجب أن يحتوي على: id (رقم فريد)، text (نص الحديث كاملاً)، narrator (الراوي)، source (اسم المصدر: صحيح البخاري أو صحيح مسلم)، number (رقم الحديث في المصدر)، category (التصنيف)، tags (قائمة كلمات دلالية).`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -42,12 +38,12 @@ export const searchAuthenticHadith = async (query: string): Promise<Hadith[]> =>
       }
     });
 
-    if (!response || !response.text) return [];
+    const text = response.text;
+    if (!text) return [];
     
-    const jsonStr = response.text.trim();
-    return JSON.parse(jsonStr);
-  } catch (e) {
-    console.error("Gemini API Error:", e);
-    return [];
+    return JSON.parse(text.trim());
+  } catch (error) {
+    console.error("Search Error:", error);
+    throw error;
   }
 };
