@@ -19,12 +19,6 @@ const HadithCard: React.FC<HadithCardProps> = ({ hadith, isFavorite, onToggleFav
     }
   };
 
-  const copyToClipboard = () => {
-    const textToCopy = `${hadith.text}\n\nالراوي: ${hadith.narrator}\nالمصدر: ${hadith.source} (${hadith.number})\nتمت المشاركة من تطبيق "ايمان"`;
-    navigator.clipboard.writeText(textToCopy);
-    alert('تم نسخ الحديث إلى الحافظة');
-  };
-
   return (
     <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition-shadow group p-8">
       <div className="flex justify-between items-start mb-6">
@@ -46,12 +40,6 @@ const HadithCard: React.FC<HadithCardProps> = ({ hadith, isFavorite, onToggleFav
             className={`p-2.5 rounded-xl transition-all ${isFavorite ? 'text-red-500 bg-red-50' : 'text-slate-400 hover:bg-slate-50'}`}
           >
             <Icons.Heart filled={isFavorite} />
-          </button>
-          <button 
-            onClick={copyToClipboard}
-            className="p-2.5 text-slate-400 hover:bg-slate-50 rounded-xl transition-all"
-          >
-            <Icons.Share />
           </button>
         </div>
       </div>

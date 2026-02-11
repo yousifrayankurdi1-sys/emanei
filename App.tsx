@@ -21,6 +21,10 @@ const App: React.FC = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
 
+  // حالات التنقل المباشر
+  const [jumpToSurah, setJumpToSurah] = useState<number | null>(null);
+  const [jumpToAzkarTab, setJumpToAzkarTab] = useState<'morning_evening' | 'prayer' | 'general_dua' | null>(null);
+
   useEffect(() => {
     const savedFavs = localStorage.getItem('hadith_favorites');
     if (savedFavs) setFavorites(JSON.parse(savedFavs));
@@ -36,8 +40,19 @@ const App: React.FC = () => {
       setUser(JSON.parse(savedUser));
     }
 
-    const random = SAMPLE_HADITHS[Math.floor(Math.random() * SAMPLE_HADITHS.length)];
-    setDailyHadith(random);
+    // منطق اختيار حديث اليوم بناءً على التاريخ لضمان تغيره كل 24 ساعة
+    const today = new Date();
+    const dateString = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+    
+    // توليد رقم فريد لليوم (Hash)
+    let hash = 0;
+    for (let i = 0; i < dateString.length; i++) {
+      hash = ((hash << 5) - hash) + dateString.charCodeAt(i);
+      hash |= 0;
+    }
+    
+    const index = Math.abs(hash) % SAMPLE_HADITHS.length;
+    setDailyHadith(SAMPLE_HADITHS[index]);
   }, []);
 
   const toggleFavorite = (id: string) => {
@@ -105,6 +120,22 @@ const App: React.FC = () => {
     performSearch(searchQuery);
   };
 
+  const navigateToSurah = (num: number) => {
+    setJumpToSurah(num);
+    setCurrentPage('quran');
+  };
+
+  const navigateToAzkar = (category: string) => {
+    setJumpToAzkarTab(category as any);
+    setCurrentPage('remembrances');
+  };
+
+  const handleNavChange = (page: string) => {
+    setJumpToSurah(null);
+    setJumpToAzkarTab(null);
+    setCurrentPage(page);
+  };
+
   const renderHome = () => (
     <div className="space-y-12 animate-in fade-in duration-700">
       <section className="text-center py-12 md:py-24 gradient-bg rounded-[2rem] text-white px-6 shadow-2xl overflow-hidden relative">
@@ -127,20 +158,20 @@ const App: React.FC = () => {
         
         <div className="flex flex-wrap justify-center gap-5">
           <button 
-            onClick={() => setCurrentPage('quran')}
+            onClick={() => handleNavChange('quran')}
             className="bg-white text-primary-900 px-10 py-5 rounded-2xl font-black shadow-xl hover:bg-emerald-50 hover:-translate-y-1 transition-all flex items-center gap-3 text-lg"
           >
             <Icons.Book />
             <span>تصفح القرآن الكريم</span>
           </button>
           <button 
-            onClick={() => setCurrentPage('search')}
+            onClick={() => handleNavChange('search')}
             className="bg-primary-900/30 text-white border border-white/20 px-10 py-5 rounded-2xl font-bold backdrop-blur-md hover:bg-white/10 transition-all text-lg"
           >
             السنة النبوية
           </button>
           <button 
-            onClick={() => setCurrentPage('remembrances')}
+            onClick={() => handleNavChange('remembrances')}
             className="bg-gold-500 text-white px-10 py-5 rounded-2xl font-black shadow-xl hover:bg-gold-600 hover:-translate-y-1 transition-all flex items-center gap-3 text-lg"
           >
             <Icons.Sun />
@@ -177,9 +208,21 @@ const App: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {bookmarkedSurahs.length > 0 ? (
               bookmarkedSurahs.map(s => (
-                <div key={s.number} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-center">
-                  <span className="font-bold text-slate-800 text-lg">سورة {s.name}</span>
-                  <button onClick={() => toggleQuranBookmark(s.number)} className="text-gold-500">
+                <div key={s.number} className="group relative">
+                  <div 
+                    onClick={() => navigateToSurah(s.number)}
+                    className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-center cursor-pointer hover:border-gold-300 hover:bg-gold-50 transition-all"
+                  >
+                    <span className="font-bold text-slate-800 text-lg">سورة {s.name}</span>
+                    <Icons.Book />
+                  </div>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleQuranBookmark(s.number);
+                    }} 
+                    className="absolute -top-2 -left-2 bg-white rounded-full shadow-md p-1 text-gold-500 border border-gold-100"
+                  >
                     <Icons.Star filled />
                   </button>
                 </div>
@@ -196,14 +239,31 @@ const App: React.FC = () => {
           <div className="grid grid-cols-1 gap-6">
             {favAzkar.length > 0 ? (
               favAzkar.map(a => (
-                <div key={a.id} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm relative group">
-                  <div className="flex justify-between items-center mb-4">
-                    <span className="font-black text-primary-800">{a.title}</span>
-                    <button onClick={() => toggleRemembranceFav(a.id)} className="text-red-500">
-                      <Icons.Heart filled />
-                    </button>
+                <div key={a.id} className="group relative">
+                  <div 
+                    onClick={() => navigateToAzkar(a.category)}
+                    className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm cursor-pointer hover:border-primary-300 hover:bg-primary-50 transition-all"
+                  >
+                    <div className="flex justify-between items-center mb-4">
+                      <span className="font-black text-primary-800">{a.title}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] bg-white px-2 py-1 rounded-md border text-slate-400 font-bold uppercase tracking-tighter">
+                          {a.category === 'morning_evening' ? 'أذكار' : a.category === 'prayer' ? 'صلاة' : 'عام'}
+                        </span>
+                        <Icons.Sun />
+                      </div>
+                    </div>
+                    <p className="hadith-text text-xl text-slate-700 leading-relaxed">{a.text}</p>
                   </div>
-                  <p className="hadith-text text-xl text-slate-700 leading-relaxed">{a.text}</p>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleRemembranceFav(a.id);
+                    }} 
+                    className="absolute -top-2 -left-2 bg-white rounded-full shadow-md p-2 text-red-500 border border-red-100"
+                  >
+                    <Icons.Heart filled />
+                  </button>
                 </div>
               ))
             ) : <p className="text-slate-400 text-sm font-bold">لا توجد أدعية مفضلة حالياً.</p>}
@@ -229,11 +289,17 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-primary-100 selection:text-primary-900">
-      <Navbar onNavigate={setCurrentPage} currentPage={currentPage} user={user} onOpenAuth={() => setIsAuthModalOpen(true)} onLogout={handleLogout} />
+      <Navbar onNavigate={handleNavChange} currentPage={currentPage} user={user} onOpenAuth={() => setIsAuthModalOpen(true)} onLogout={handleLogout} />
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} onLogin={handleLogin} />
       <main className="flex-grow container mx-auto px-4 py-10 md:py-16">
         {currentPage === 'home' && renderHome()}
-        {currentPage === 'quran' && <QuranBrowser bookmarks={quranBookmarks} onToggleBookmark={toggleQuranBookmark} />}
+        {currentPage === 'quran' && (
+          <QuranBrowser 
+            bookmarks={quranBookmarks} 
+            onToggleBookmark={toggleQuranBookmark} 
+            initialSurahNumber={jumpToSurah}
+          />
+        )}
         {currentPage === 'search' && (
           <div className="max-w-5xl mx-auto space-y-10 animate-in slide-in-from-bottom duration-500">
             <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100">
@@ -254,13 +320,19 @@ const App: React.FC = () => {
             {isSearching ? <div className="text-center py-20"><div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto"></div></div> : (
               searchResults.length > 0 ? searchResults.map(h => <HadithCard key={h.id} hadith={h} isFavorite={favorites.includes(h.id)} onToggleFavorite={toggleFavorite} />) : 
               <div className="space-y-6">
-                <h3 className="text-xl font-black text-slate-800">حديث مقترح</h3>
+                <h3 className="text-xl font-black text-slate-800">حديث اليوم</h3>
                 <HadithCard hadith={dailyHadith} isFavorite={favorites.includes(dailyHadith.id)} onToggleFavorite={toggleFavorite} />
               </div>
             )}
           </div>
         )}
-        {currentPage === 'remembrances' && <RemembranceSection favorites={remembranceFavs} onToggleFavorite={toggleRemembranceFav} />}
+        {currentPage === 'remembrances' && (
+          <RemembranceSection 
+            favorites={remembranceFavs} 
+            onToggleFavorite={toggleRemembranceFav} 
+            initialTab={jumpToAzkarTab}
+          />
+        )}
         {currentPage === 'favorites' && renderFavorites()}
       </main>
       <footer className="bg-white border-t py-10 text-center">

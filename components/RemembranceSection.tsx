@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AUTHENTIC_REMEMBRANCES, Icons } from '../constants';
 import { Remembrance } from '../types';
 
@@ -125,10 +125,15 @@ const RemembranceCard: React.FC<RemembranceCardProps> = ({ item, isFavorite, onT
 interface RemembranceSectionProps {
   favorites: string[];
   onToggleFavorite: (id: string) => void;
+  initialTab?: 'morning_evening' | 'prayer' | 'general_dua' | null;
 }
 
-const RemembranceSection: React.FC<RemembranceSectionProps> = ({ favorites, onToggleFavorite }) => {
+const RemembranceSection: React.FC<RemembranceSectionProps> = ({ favorites, onToggleFavorite, initialTab }) => {
   const [activeTab, setActiveTab] = useState<'morning_evening' | 'prayer' | 'general_dua'>('morning_evening');
+
+  useEffect(() => {
+    if (initialTab) setActiveTab(initialTab);
+  }, [initialTab]);
 
   const filteredItems = AUTHENTIC_REMEMBRANCES.filter(item => item.category === activeTab);
 
