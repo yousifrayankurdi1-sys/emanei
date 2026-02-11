@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Navbar from './components/Navbar';
 import HadithCard from './components/HadithCard';
 import QuranBrowser from './components/QuranBrowser';
@@ -7,8 +7,7 @@ import RemembranceSection from './components/RemembranceSection';
 import AdminPanel from './components/AdminPanel';
 import AuthModal from './components/AuthModal';
 import { Hadith, User, Remembrance } from './types';
-import { Icons, SURAHS, SAMPLE_HADITHS, AUTHENTIC_REMEMBRANCES } from './constants';
-import { searchAuthenticHadith } from './services/geminiService';
+import { Icons, SAMPLE_HADITHS, AUTHENTIC_REMEMBRANCES } from './constants';
 import { 
   fetchHadithsFromFirebase, 
   fetchRemembrancesFromFirebase, 
@@ -27,11 +26,7 @@ const App: React.FC = () => {
   const [isLoadingData, setIsLoadingData] = useState(true);
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<Hadith[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchError, setSearchError] = useState<string | null>(null);
   
-  // حالات نافذة تسجيل الدخول
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalInAdminMode, setAuthModalInAdminMode] = useState(false);
   
@@ -49,7 +44,13 @@ const App: React.FC = () => {
         fetchRemembrancesFromFirebase()
       ]);
       
-      setAllHadiths(firebaseHadiths.length > 0 ? firebaseHadiths : SAMPLE_HADITHS);
+      // دمج الأحاديث المحلية مع أحاديث فايربيز
+      const combined = [...SAMPLE_HADITHS];
+      firebaseHadiths.forEach(fh => {
+        if (!combined.find(c => c.id === fh.id)) combined.push(fh);
+      });
+
+      setAllHadiths(combined);
       setAllRemembrances(firebaseRemembrances.length > 0 ? firebaseRemembrances : AUTHENTIC_REMEMBRANCES);
     } catch (err) {
       console.error("Firebase load failed, using local constants", err);
@@ -141,29 +142,19 @@ const App: React.FC = () => {
     setJumpToSurah(null);
     setJumpToAzkarTab(null);
     setEditingTarget(null);
-    setSearchError(null);
+    setSearchQuery('');
     setCurrentPage(page);
   };
 
-  const performSearch = async (term: string) => {
-    if (!term.trim()) return;
-    setIsSearching(true);
-    setSearchError(null);
-    try {
-      const results = await searchAuthenticHadith(term);
-      setSearchResults(results);
-      if (results.length === 0) setSearchError("لم يتم العثور على أحاديث تطابق بحثك.");
-    } catch (err) {
-      setSearchError("حدث خطأ في محرك البحث.");
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    performSearch(searchQuery);
-  };
+  const filteredHadiths = useMemo(() => {
+    if (!searchQuery.trim()) return allHadiths;
+    const q = searchQuery.toLowerCase();
+    return allHadiths.filter(h => 
+      h.text.toLowerCase().includes(q) || 
+      h.narrator.toLowerCase().includes(q) || 
+      h.tags.some(t => t.toLowerCase().includes(q))
+    );
+  }, [allHadiths, searchQuery]);
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-primary-100 selection:text-primary-900 relative">
@@ -185,7 +176,7 @@ const App: React.FC = () => {
         isAdminModeInitially={authModalInAdminMode}
       />
       
-      <main className="flex-grow container mx-auto px-4 py-10 md:py-16">
+      <main className="flex-grow container mx-auto px-4 py-8 md:py-12">
         {currentPage === 'home' && (
           <div className="space-y-12 animate-in fade-in duration-700 text-center">
             <section className="py-12 md:py-24 gradient-bg rounded-[2rem] text-white px-6 shadow-2xl overflow-hidden relative">
@@ -196,7 +187,7 @@ const App: React.FC = () => {
               </p>
               <div className="flex flex-wrap justify-center gap-5">
                 <button onClick={() => handleNavChange('quran')} className="bg-white text-primary-900 px-10 py-5 rounded-2xl font-black shadow-xl flex items-center gap-3 text-lg"><Icons.Book /> تصفح القرآن</button>
-                <button onClick={() => handleNavChange('search')} className="bg-primary-900/30 text-white border border-white/20 px-10 py-5 rounded-2xl font-bold backdrop-blur-md text-lg">السنة النبوية</button>
+                <button onClick={() => handleNavChange('search')} className="bg-primary-900/30 text-white border border-white/20 px-10 py-5 rounded-2xl font-bold backdrop-blur-md text-lg">الأحاديث النبوية</button>
                 <button onClick={() => handleNavChange('remembrances')} className="bg-gold-500 text-white px-10 py-5 rounded-2xl font-black shadow-xl flex items-center gap-3 text-lg"><Icons.Sun /> الأذكار</button>
               </div>
             </section>
@@ -204,37 +195,72 @@ const App: React.FC = () => {
         )}
         
         {currentPage === 'quran' && <QuranBrowser bookmarks={quranBookmarks} onToggleBookmark={toggleQuranBookmark} initialSurahNumber={jumpToSurah} />}
+        
         {currentPage === 'search' && (
-          <div className="max-w-5xl mx-auto space-y-10">
-            <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 text-center">
-              <h2 className="text-3xl font-black text-slate-900 mb-6">البحث في السنة النبوية</h2>
-              <form onSubmit={handleSearchSubmit} className="relative group">
-                <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="ابحث عن حديث..." className="w-full h-16 px-14 rounded-2xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary-500/20 shadow-inner transition-all text-xl text-slate-800 text-center" />
-                <button type="submit" disabled={isSearching} className="absolute left-2 top-2 bottom-2 px-8 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold transition-all">{isSearching ? "جاري البحث..." : "بحث"}</button>
-              </form>
+          <div className="max-w-4xl mx-auto space-y-2">
+            <div className="bg-white p-8 rounded-t-[2rem] border-x border-t border-slate-100 text-center mb-0 shadow-sm sticky top-0 z-30">
+              <h2 className="text-3xl font-black text-slate-900 mb-2">الأحاديث النبوية</h2>
+              <div className="relative group max-w-xl mx-auto">
+                <input 
+                  type="text" 
+                  value={searchQuery} 
+                  onChange={(e) => setSearchQuery(e.target.value)} 
+                  placeholder="فلترة الأحاديث بالكلمة..." 
+                  className="w-full h-14 px-12 rounded-2xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary-500/10 shadow-inner transition-all text-lg text-slate-800 text-center font-bold" 
+                />
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300">
+                  <Icons.Search />
+                </div>
+              </div>
             </div>
-            {isSearching ? <div className="text-center py-20 animate-pulse font-bold text-slate-400">جاري استخراج الأحاديث...</div> : (
-              searchResults.length > 0 ? searchResults.map(h => <HadithCard key={h.id} hadith={h} isFavorite={favorites.includes(h.id)} onToggleFavorite={toggleFavorite} onEdit={() => handleEditRequest('hadith', h)} showEdit={!!user?.isAdmin} />) : 
-              allHadiths.map(h => <HadithCard key={h.id} hadith={h} isFavorite={favorites.includes(h.id)} onToggleFavorite={toggleFavorite} onEdit={() => handleEditRequest('hadith', h)} showEdit={!!user?.isAdmin} />)
-            )}
+            
+            <div className="flex flex-col">
+              <div className="space-y-0.5">
+                {filteredHadiths.map((h, index, arr) => (
+                  <div key={h.id} className={index === arr.length - 1 ? "rounded-b-[2rem] overflow-hidden border-b border-x border-slate-100 shadow-sm" : ""}>
+                    <HadithCard 
+                      hadith={h} 
+                      isFavorite={favorites.includes(h.id)} 
+                      onToggleFavorite={toggleFavorite} 
+                      onEdit={() => handleEditRequest('hadith', h)} 
+                      showEdit={!!user?.isAdmin} 
+                    />
+                  </div>
+                ))}
+                
+                {filteredHadiths.length === 0 && (
+                  <div className="text-center py-32 bg-white border border-slate-100 rounded-b-[2rem]">
+                    <p className="text-slate-300 font-black text-xl">لا توجد نتائج لهذا البحث.</p>
+                    <button onClick={() => setSearchQuery('')} className="mt-4 text-primary-600 underline font-bold">إظهار كافة الأحاديث</button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
+
         {currentPage === 'remembrances' && <RemembranceSection favorites={remembranceFavs} onToggleFavorite={toggleRemembranceFav} initialTab={jumpToAzkarTab} onEdit={(r) => handleEditRequest('remembrance', r)} showEdit={!!user?.isAdmin} />}
+        
         {currentPage === 'favorites' && (
-          <div className="max-w-5xl mx-auto space-y-12">
-             <h2 className="text-4xl font-black mb-10 text-slate-900">المفضلة والمحفوظات</h2>
-             <section className="space-y-6">
-               <div className="flex items-center gap-3"><div className="h-6 w-1 bg-emerald-600 rounded-full"></div><h3 className="text-xl font-black text-slate-800">أحاديث أعجبتني</h3></div>
-               <div className="grid grid-cols-1 gap-6">
-                 {allHadiths.filter(h => favorites.includes(h.id)).map(h => <HadithCard key={h.id} hadith={h} isFavorite={true} onToggleFavorite={toggleFavorite} onEdit={() => handleEditRequest('hadith', h)} showEdit={!!user?.isAdmin} />)}
+          <div className="max-w-4xl mx-auto space-y-6">
+             <h2 className="text-3xl font-black mb-6 text-slate-900">المفضلة والمحفوظات</h2>
+             <section className="space-y-1">
+               <div className="flex items-center gap-2 mb-4"><div className="h-4 w-1 bg-emerald-600 rounded-full"></div><h3 className="text-lg font-black text-slate-800">أحاديث محفوظة</h3></div>
+               <div className="flex flex-col space-y-0.5">
+                 {allHadiths.filter(h => favorites.includes(h.id)).map((h, idx, arr) => (
+                   <div key={h.id} className={idx === arr.length - 1 ? "rounded-b-2xl overflow-hidden shadow-sm" : idx === 0 ? "rounded-t-2xl overflow-hidden" : ""}>
+                     <HadithCard hadith={h} isFavorite={true} onToggleFavorite={toggleFavorite} onEdit={() => handleEditRequest('hadith', h)} showEdit={!!user?.isAdmin} />
+                   </div>
+                 ))}
+                 {favorites.length === 0 && <div className="p-16 text-center bg-white rounded-2xl border border-dashed text-slate-300 font-bold">المفضلة فارغة حالياً.</div>}
                </div>
              </section>
           </div>
         )}
+        
         {currentPage === 'admin' && user?.isAdmin && <AdminPanel hadiths={allHadiths} remembrances={allRemembrances} onRefresh={loadInitialData} initialEdit={editingTarget} />}
       </main>
 
-      {/* الزر السري في الزاوية اليمنى السفلية - الترس الذي يفتح الإدارة */}
       <button 
         onClick={() => {
           if (user?.isAdmin) {
@@ -244,7 +270,7 @@ const App: React.FC = () => {
             setIsAuthModalOpen(true);
           }
         }}
-        className="fixed bottom-4 right-4 p-4 text-slate-200 opacity-20 hover:opacity-100 hover:text-primary-600 transition-all z-[100] scale-90 hover:scale-110"
+        className="fixed bottom-4 right-4 p-4 text-slate-200 opacity-20 hover:opacity-100 hover:text-primary-600 transition-all z-[100] scale-75 hover:scale-100"
         aria-label="Admin Access"
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -253,7 +279,7 @@ const App: React.FC = () => {
         </svg>
       </button>
 
-      <footer className="bg-white border-t py-10 text-center text-slate-400 text-sm font-bold">ايمان - جميع البيانات محدثة سحابياً وموثقة</footer>
+      <footer className="bg-white border-t py-6 text-center text-slate-300 text-[10px] font-black tracking-widest uppercase">ايمان - الأحاديث مأخوذة من المصادر المعتمدة</footer>
     </div>
   );
 };

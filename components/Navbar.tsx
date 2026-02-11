@@ -15,7 +15,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage, user, onOpenAu
   const menuItems = [
     { id: 'home', label: 'الرئيسية' },
     { id: 'quran', label: 'القرآن الكريم' },
-    { id: 'search', label: 'السنة النبوية' },
+    { id: 'search', label: 'الأحاديث النبوية' },
     { id: 'remembrances', label: 'الأذكار والأدعية' },
     { id: 'favorites', label: 'المفضلة' },
     ...(user?.isAdmin ? [{ id: 'admin', label: 'لوحة التحكم' }] : [])

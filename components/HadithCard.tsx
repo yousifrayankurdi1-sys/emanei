@@ -14,60 +14,66 @@ interface HadithCardProps {
 const HadithCard: React.FC<HadithCardProps> = ({ hadith, isFavorite, onToggleFavorite, onEdit, showEdit }) => {
   const getSourceColor = (source: Source) => {
     switch (source) {
-      case Source.BUKHARI: return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-      case Source.MUSLIM: return 'bg-blue-100 text-blue-800 border-blue-200';
-      case Source.AGREED: return 'bg-amber-100 text-amber-800 border-amber-200';
-      default: return 'bg-slate-100 text-slate-800 border-slate-200';
+      case Source.BUKHARI: return 'text-emerald-700 bg-emerald-50 border-emerald-100';
+      case Source.MUSLIM: return 'text-blue-700 bg-blue-50 border-blue-100';
+      case Source.AGREED: return 'text-amber-700 bg-amber-50 border-amber-100';
+      default: return 'text-slate-600 bg-slate-50 border-slate-100';
     }
   };
 
   return (
-    <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition-shadow group p-8">
-      <div className="flex justify-between items-start mb-6">
-        <div className="flex flex-wrap gap-2">
-          <span className={`px-4 py-1.5 rounded-full text-xs font-black border ${getSourceColor(hadith.source)}`}>
-            {hadith.source}
-          </span>
-          <span className="px-4 py-1.5 rounded-full bg-slate-50 text-slate-600 text-xs font-bold border border-slate-200">
-            رقم: {hadith.number}
-          </span>
-        </div>
-        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          {showEdit && onEdit && (
-            <button 
-              onClick={onEdit}
-              className="p-2.5 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all"
-              title="تعديل هذا الحديث"
-            >
-              <Icons.Refresh />
-            </button>
-          )}
-          <button 
-            onClick={() => onToggleFavorite(hadith.id)}
-            className={`p-2.5 rounded-xl transition-all ${isFavorite ? 'text-red-500 bg-red-50' : 'text-slate-400 hover:bg-slate-50'}`}
-          >
-            <Icons.Heart filled={isFavorite} />
-          </button>
-        </div>
-      </div>
-
-      <div className="mb-8">
-        <p className="hadith-text text-slate-800 text-2xl md:text-3xl text-justify leading-[1.8] font-serif">
-          {hadith.text}
-        </p>
-      </div>
-
-      <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center gap-4 border-t border-slate-50 pt-6">
-        <div className="flex flex-col">
-          <span className="text-xs text-slate-400 font-bold mb-1">الراوي:</span>
-          <span className="text-lg text-slate-700 font-black">{hadith.narrator}</span>
-        </div>
-        <div className="flex gap-2">
-          {hadith.tags.map((tag, idx) => (
-            <span key={idx} className="text-xs px-3 py-1 bg-slate-50 text-slate-500 rounded-lg font-bold border border-slate-100">
-              #{tag}
+    <div className="bg-white border-b border-slate-100 hover:bg-slate-50/50 transition-colors group overflow-hidden animate-in fade-in duration-300">
+      <div className="p-6 md:p-10 flex flex-col gap-5">
+        {/* Header - Very Clean */}
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <span className={`px-2.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider border ${getSourceColor(hadith.source)}`}>
+              {hadith.source}
             </span>
-          ))}
+            <span className="text-[10px] text-slate-300 font-bold tracking-widest">حديث رقم {hadith.number}</span>
+          </div>
+          <div className="flex gap-2">
+            {showEdit && onEdit && (
+              <button 
+                onClick={(e) => { e.stopPropagation(); onEdit(); }}
+                className="p-2 text-slate-300 hover:text-blue-500 transition-colors bg-white rounded-lg border border-slate-100 shadow-sm"
+              >
+                <Icons.Refresh />
+              </button>
+            )}
+            <button 
+              onClick={(e) => { e.stopPropagation(); onToggleFavorite(hadith.id); }}
+              className={`p-2 transition-all rounded-lg border shadow-sm ${
+                isFavorite 
+                ? 'text-red-500 bg-red-50 border-red-100' 
+                : 'text-slate-300 bg-white border-slate-100 hover:text-red-400'
+              }`}
+            >
+              <Icons.Heart filled={isFavorite} />
+            </button>
+          </div>
+        </div>
+
+        {/* Text Area - Focus on Typography */}
+        <div className="pr-4 border-r-4 border-primary-500/20">
+          <p className="hadith-text text-slate-900 text-2xl md:text-3xl text-justify leading-[1.8] font-serif">
+            {hadith.text}
+          </p>
+        </div>
+
+        {/* Footer Area - Metadata */}
+        <div className="flex flex-wrap justify-between items-center gap-4 mt-2">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-black text-xs">ر</div>
+            <span className="text-sm text-slate-500 font-bold">عن {hadith.narrator}</span>
+          </div>
+          <div className="flex gap-1.5">
+            {hadith.tags.map((tag, idx) => (
+              <span key={idx} className="text-[10px] font-black text-slate-400 px-3 py-1 bg-slate-100/50 rounded-full">
+                #{tag}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </div>
