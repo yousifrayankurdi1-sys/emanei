@@ -20,86 +20,115 @@ const SurahReader: React.FC<{ surah: Surah; onBack: () => void }> = ({ surah, on
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
     const fetchSurahData = async () => {
       setLoading(true);
+      setError(null);
       try {
         const response = await fetch(`https://api.alquran.cloud/v1/surah/${surah.number}`);
+        if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
-        if (data.code === 200 && data.data) {
-          setAyahs(data.data.ayahs);
-        } else {
-          setError('فشل في تحميل نص السورة.');
+        
+        if (isMounted) {
+          if (data && data.code === 200 && data.data && data.data.ayahs) {
+            setAyahs(data.data.ayahs);
+          } else {
+            setError('تعذر العثور على بيانات السورة.');
+          }
         }
       } catch (err) {
-        setError('حدث خطأ في الاتصال بالخادم.');
+        if (isMounted) setError('حدث خطأ أثناء تحميل السورة. يرجى التحقق من اتصالك.');
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
+
     fetchSurahData();
+    return () => { isMounted = false; };
   }, [surah.number]);
 
-  // دالة لتنظيف نص الآية الأولى من البسملة المدمجة
-  const cleanAyahText = (text: string, index: number) => {
-    // استثناء سورة الفاتحة (1) والتوبة (9)
-    if (surah.number === 1 || surah.number === 9) return text;
-    
-    if (index === 0) {
-      // إزالة البسملة من بداية الآية الأولى
-      const bismillah = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ";
-      const bismillahAlt = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ";
-      
-      let cleaned = text;
-      if (cleaned.startsWith(bismillah)) {
-        cleaned = cleaned.replace(bismillah, "").trim();
-      } else if (cleaned.startsWith(bismillahAlt)) {
-        cleaned = cleaned.replace(bismillahAlt, "").trim();
+  // منطق تنظيف نص الآية من البسملة لضمان عدم التكرار
+  const getCleanedAyahText = (ayah: Ayah) => {
+    // 1. الفاتحة (1) والتوبة (9) تظهر كما هي بدون تعديل
+    if (surah.number === 1 || surah.number === 9) return ayah.text;
+
+    // 2. في السور الأخرى، الآية الأولى تحتوي عادة على البسملة في البداية
+    if (ayah.numberInSurah === 1) {
+      const bismillahPatterns = [
+        "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ",
+        "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+        "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيم"
+      ];
+
+      let cleanedText = ayah.text;
+      for (const pattern of bismillahPatterns) {
+        if (cleanedText.startsWith(pattern)) {
+          cleanedText = cleanedText.replace(pattern, "").trim();
+          break;
+        }
       }
-      return cleaned;
+      
+      // إذا كانت الآية هي البسملة فقط (نادر في بعض المصاحف الرقمية)، نرجع فراغاً
+      return cleanedText;
     }
-    return text;
+
+    return ayah.text;
   };
+
+  if (error) {
+    return (
+      <div className="max-w-xl mx-auto py-20 text-center">
+        <div className="bg-red-50 p-8 rounded-3xl border border-red-100">
+          <p className="text-red-600 font-bold mb-4">{error}</p>
+          <button onClick={onBack} className="bg-red-600 text-white px-6 py-2 rounded-xl font-bold">العودة للخلف</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto py-8 px-4 animate-in fade-in duration-500">
       <button 
         onClick={onBack}
-        className="flex items-center gap-2 text-primary-700 font-bold mb-8 hover:opacity-70 transition-opacity bg-white px-6 py-2 rounded-full shadow-sm"
+        className="flex items-center gap-2 text-primary-700 font-bold mb-8 hover:opacity-70 transition-opacity bg-white px-6 py-3 rounded-2xl shadow-sm border border-slate-50"
       >
-        <span>← عودة للسور</span>
+        <span>← قائمة السور</span>
       </button>
 
-      <div className="bg-white rounded-[3rem] p-8 md:p-16 shadow-sm border border-slate-100">
-        <div className="text-center mb-12">
-          <h2 className="text-5xl md:text-6xl font-serif font-black text-slate-900 mb-4">سورة {surah.name}</h2>
-          <div className="text-slate-400 font-bold text-sm tracking-widest uppercase">
-            {surah.revelationType === 'Meccan' ? 'مكية' : 'مدنية'} • {surah.numberOfAyahs} آية
+      <div className="bg-white rounded-[3rem] p-8 md:p-16 shadow-sm border border-slate-100 overflow-hidden">
+        <div className="text-center mb-16">
+          <h2 className="text-5xl md:text-7xl font-serif font-black text-slate-900 mb-6 leading-tight">سورة {surah.name}</h2>
+          <div className="flex justify-center items-center gap-4 text-slate-400 font-bold text-sm tracking-widest uppercase bg-slate-50 w-fit mx-auto px-6 py-2 rounded-full">
+            <span>{surah.revelationType === 'Meccan' ? 'مكية' : 'مدنية'}</span>
+            <span className="w-1.5 h-1.5 bg-slate-200 rounded-full"></span>
+            <span>{surah.numberOfAyahs} آية</span>
           </div>
         </div>
 
         {loading ? (
-          <div className="py-20 text-center">
-            <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-slate-400 font-bold">جاري تحميل الآيات...</p>
+          <div className="py-24 text-center">
+            <div className="w-14 h-14 border-[5px] border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+            <p className="text-slate-400 font-black text-xl">جاري استحضار الآيات...</p>
           </div>
-        ) : error ? (
-          <div className="py-20 text-center text-red-500 font-bold">{error}</div>
         ) : (
-          <div className="quran-container">
-            {/* البسملة كعنوان جمالي */}
+          <div className="quran-reader-container">
+            {/* عرض البسملة كعنوان جمالي مستقل (إلا في الفاتحة والتوبة) */}
             {surah.number !== 1 && surah.number !== 9 && (
-              <div className="basmala">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+              <div className="basmala text-center mb-12 animate-in fade-in slide-in-from-top duration-700">
+                بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+              </div>
             )}
 
-            <div className="quran-text text-3xl md:text-5xl text-slate-800 text-center">
-              {ayahs.map((ayah, index) => {
-                const text = cleanAyahText(ayah.text, index);
-                if (!text && index === 0 && surah.number !== 1) return null;
+            <div className="quran-text text-3xl md:text-5xl text-slate-800 text-center leading-[2.5] select-none">
+              {ayahs.map((ayah) => {
+                const cleanedText = getCleanedAyahText(ayah);
+                // إذا كانت الآية الأولى عبارة عن بسملة فقط وتم تنظيفها بالكامل، لا نعرض فراغاً
+                if (!cleanedText && ayah.numberInSurah === 1) return null;
 
                 return (
-                  <span key={ayah.number} className="inline group">
-                    <span className="hover:text-primary-600 transition-colors">{text}</span>
-                    <span className="ayah-number">{ayah.numberInSurah}</span>
+                  <span key={ayah.number} className="inline group hover:bg-primary-50/30 transition-colors rounded-xl px-1">
+                    <span className="relative">{cleanedText}</span>
+                    <span className="ayah-number select-none">{ayah.numberInSurah}</span>
                   </span>
                 );
               })}
@@ -115,42 +144,47 @@ const QuranBrowser: React.FC<QuranBrowserProps> = ({ bookmarks, onToggleBookmark
   const [selectedSurah, setSelectedSurah] = useState<Surah | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredSurahs = SURAHS.filter(s => s.name.includes(searchTerm));
+  const filteredSurahs = (SURAHS || []).filter(s => s && s.name && s.name.includes(searchTerm));
 
   if (selectedSurah) {
     return <SurahReader surah={selectedSurah} onBack={() => setSelectedSurah(null)} />;
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-12">
-      <div className="text-center">
-        <h2 className="text-5xl font-black text-slate-900 mb-4">القرآن الكريم</h2>
-        <div className="max-w-md mx-auto relative">
+    <div className="max-w-7xl mx-auto space-y-12 pb-20">
+      <div className="text-center space-y-6">
+        <h2 className="text-5xl md:text-6xl font-black text-slate-900">القرآن الكريم</h2>
+        <div className="max-w-xl mx-auto relative px-4">
           <input 
             type="text" 
-            placeholder="ابحث عن سورة..."
+            placeholder="ابحث عن اسم السورة..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full h-14 px-6 rounded-2xl bg-white border border-slate-200 shadow-sm focus:ring-4 focus:ring-primary-500/10 transition-all font-bold"
+            className="w-full h-16 px-8 rounded-2xl bg-white border border-slate-200 shadow-sm focus:ring-4 focus:ring-primary-500/10 transition-all font-bold text-lg text-center"
           />
+          <div className="absolute left-8 top-1/2 -translate-y-1/2 text-slate-300">
+            <Icons.Search />
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-4">
         {filteredSurahs.map((surah) => (
           <button
             key={surah.number}
             onClick={() => setSelectedSurah(surah)}
-            className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all text-right group relative"
+            className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all text-right group relative overflow-hidden"
           >
-            <div className="flex justify-between items-center mb-4">
-              <span className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-400 font-black group-hover:bg-primary-600 group-hover:text-white transition-all">
+            <div className="flex justify-between items-center mb-6">
+              <span className="w-12 h-12 flex items-center justify-center rounded-2xl bg-slate-50 text-slate-400 font-black group-hover:bg-primary-600 group-hover:text-white transition-all shadow-inner">
                 {surah.number}
               </span>
               <Icons.Book />
             </div>
-            <h3 className="text-2xl font-serif font-black text-slate-800">سورة {surah.name}</h3>
-            <p className="text-slate-400 text-sm mt-1 font-bold">{surah.numberOfAyahs} آية</p>
+            <h3 className="text-2xl font-serif font-black text-slate-800 group-hover:text-primary-700 transition-colors">سورة {surah.name}</h3>
+            <p className="text-slate-400 text-sm mt-2 font-bold">{surah.numberOfAyahs} آية</p>
+            
+            <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-primary-50 rounded-full opacity-0 group-hover:opacity-100 transition-all blur-2xl"></div>
           </button>
         ))}
       </div>

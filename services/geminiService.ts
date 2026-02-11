@@ -3,17 +3,18 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Hadith, Source, Category } from "../types";
 
 export const searchAuthenticHadith = async (query: string): Promise<Hadith[]> => {
-  if (!query || !process.env.API_KEY) {
-    console.warn("API Key is missing or query is empty");
+  // فحص أمان أولي لمنع الشاشة البيضاء
+  const apiKey = process.env.API_KEY;
+  if (!apiKey || !query) {
+    console.error("API Key is missing or query is empty");
     return [];
   }
 
   try {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `البحث عن أحاديث صحيحة 100% فقط من صحيحي البخاري ومسلم تتعلق بـ: "${query}". 
-      يجب أن تكون النتائج دقيقة تماماً وموثقة.`,
+      contents: `البحث عن أحاديث صحيحة 100% فقط من صحيحي البخاري ومسلم تتعلق بـ: "${query}". يجب أن تكون النتائج بتنسيق JSON دقيق.`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -35,10 +36,12 @@ export const searchAuthenticHadith = async (query: string): Promise<Hadith[]> =>
       }
     });
 
-    const jsonStr = response.text?.trim() || '[]';
+    if (!response || !response.text) return [];
+    
+    const jsonStr = response.text.trim();
     return JSON.parse(jsonStr);
   } catch (e) {
-    console.error("Gemini Service Error:", e);
+    console.error("Gemini Critical Error:", e);
     return [];
   }
 };
