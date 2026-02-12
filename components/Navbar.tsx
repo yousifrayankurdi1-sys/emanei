@@ -85,7 +85,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage, user, onOpenAu
         </div>
       </div>
 
-      {/* Navigation for mobile screens (Horizontal Scroll instead of hamburger) */}
+      {/* Navigation for mobile screens */}
       <div className="lg:hidden bg-slate-50/50 border-t border-slate-100 overflow-x-auto no-scrollbar py-2">
         <div className="flex px-4 space-x-reverse space-x-2">
           {menuItems.map((item) => (
