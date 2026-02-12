@@ -1,9 +1,8 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { Hadith } from "../types";
+import { Hadith, Source, Category } from "../types";
 
 export const searchAuthenticHadith = async (query: string): Promise<Hadith[]> => {
-  // استخدام مفتاح API من البيئة مباشرة كما تقتضي التعليمات
   const apiKey = process.env.API_KEY;
 
   if (!apiKey) {
@@ -14,9 +13,24 @@ export const searchAuthenticHadith = async (query: string): Promise<Hadith[]> =>
     const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `بصفتك خبير في السنة النبوية، ابحث في صحيح البخاري وصحيح مسلم فقط عن أحاديث تتعلق بـ: "${query}". 
-      يجب أن تكون النتيجة بتنسيق JSON حصراً كقائمة من الكائنات.
-      كل كائن يجب أن يحتوي على: id (رقم فريد)، text (نص الحديث كاملاً)، narrator (الراوي)، source (اسم المصدر: صحيح البخاري أو صحيح مسلم)، number (رقم الحديث في المصدر)، category (التصنيف)، tags (قائمة كلمات دلالية).`,
+      contents: `أنت خبير في "الجامع المسند الصحيح" للبخاري و"المسند الصحيح" لمسلم. 
+      مهمتك: استخراج كافة الأحاديث المتعلقة بـ: "${query}" من الكتابين فقط.
+      القواعد:
+      1. لا تكرر الأحاديث إذا وردت في الكتابين (اختر الرواية الأتم).
+      2. تأكد من صحة رقم الحديث والمصدر بدقة.
+      3. يجب أن تكون النتيجة JSON حصراً.
+      4. التصنيفات المتاحة: عقيدة، أخلاق، عبادات، معاملات، عام.
+      
+      التنسيق المطلوب لكل حديث:
+      {
+        "id": "معرف فريد",
+        "text": "نص الحديث كاملاً مع التشكيل إن أمكن",
+        "narrator": "اسم الصحابي الراوي",
+        "source": "صحيح البخاري" أو "صحيح مسلم",
+        "number": "رقم الحديث",
+        "category": "أحد التصنيفات المذكورة",
+        "tags": ["كلمات مفتاحية"]
+      }`,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -41,7 +55,11 @@ export const searchAuthenticHadith = async (query: string): Promise<Hadith[]> =>
     const text = response.text;
     if (!text) return [];
     
-    return JSON.parse(text.trim());
+    const results = JSON.parse(text.trim());
+    return results.map((r: any) => ({
+      ...r,
+      source: r.source.includes("البخاري") ? Source.BUKHARI : (r.source.includes("مسلم") ? Source.MUSLIM : Source.AGREED)
+    }));
   } catch (error) {
     console.error("Search Error:", error);
     throw error;

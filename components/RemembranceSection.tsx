@@ -29,7 +29,7 @@ const RemembranceCard: React.FC<RemembranceCardProps> = ({ item, isFavorite, onT
     <div 
       onClick={increment}
       className={`bg-white p-6 md:p-8 rounded-[2rem] border transition-all cursor-pointer relative overflow-hidden group ${
-        currentCount === item.count 
+        currentCount === item.count && item.count > 1
         ? 'border-emerald-500 bg-emerald-50 shadow-lg shadow-emerald-100' 
         : 'border-slate-100 shadow-sm hover:shadow-md hover:border-primary-200'
       }`}
@@ -62,28 +62,45 @@ const RemembranceCard: React.FC<RemembranceCardProps> = ({ item, isFavorite, onT
           >
             <Icons.Heart filled={isFavorite} />
           </button>
-           <button 
-            onClick={reset}
-            className="p-2 bg-slate-50 text-slate-400 rounded-xl hover:text-red-500 transition-colors"
-            title="إعادة التكرار"
-          >
-            <Icons.Refresh />
-          </button>
+           {item.count > 1 && (
+             <button 
+              onClick={reset}
+              className="p-2 bg-slate-50 text-slate-400 rounded-xl hover:text-red-500 transition-colors"
+              title="إعادة التكرار"
+            >
+              <Icons.Refresh />
+            </button>
+           )}
         </div>
       </div>
 
-      <p className="hadith-text text-2xl md:text-3xl text-slate-800 text-justify mb-8 leading-[1.8]">
+      <p className="hadith-text text-2xl md:text-3xl text-slate-800 text-justify mb-8 leading-[1.8] font-serif">
         {item.text}
       </p>
 
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center font-black text-slate-500">
-            {item.count}
-          </div>
-          <span className="text-xs font-bold text-slate-400">مرات التكرار</span>
+      {item.benefit && (
+        <div className="mb-6 p-4 bg-primary-50 rounded-2xl border border-primary-100">
+          <p className="text-xs font-bold text-primary-700 leading-relaxed">
+             <span className="font-black">الفضل:</span> {item.benefit}
+          </p>
         </div>
-      </div>
+      )}
+
+      {item.count > 1 && (
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black transition-all ${currentCount === item.count ? 'bg-emerald-600 text-white shadow-lg' : 'bg-slate-100 text-slate-500'}`}>
+              {currentCount} / {item.count}
+            </div>
+            <span className="text-xs font-black text-slate-400">تكرار الذكر</span>
+          </div>
+          {currentCount === item.count && (
+            <div className="animate-bounce text-emerald-500">
+               <Icons.Check />
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
@@ -107,16 +124,16 @@ const RemembranceSection: React.FC<RemembranceSectionProps> = ({ favorites, onTo
     <div className="max-w-5xl mx-auto space-y-10 animate-in slide-in-from-bottom duration-500">
       <div className="flex flex-wrap justify-center gap-3 bg-white p-2 rounded-3xl border border-slate-100 shadow-sm max-w-2xl mx-auto">
         {[
-          { id: 'morning_evening', label: 'أذكار الصباح والمساء', icon: <Icons.Sun /> },
+          { id: 'morning_evening', label: 'الصباح والمساء', icon: <Icons.Sun /> },
           { id: 'prayer', label: 'أدعية الصلاة', icon: <Icons.Star /> },
-          { id: 'general_dua', label: 'أدعية نبوية عامة', icon: <Icons.Book /> },
+          { id: 'general_dua', label: 'أدعية نبوية', icon: <Icons.Book /> },
         ].map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id as any)}
             className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all ${
               activeTab === tab.id 
-              ? 'bg-primary-600 text-white shadow-lg' 
+              ? 'bg-primary-600 text-white shadow-lg shadow-primary-200' 
               : 'text-slate-500 hover:bg-slate-50'
             }`}
           >
