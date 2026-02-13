@@ -12,7 +12,28 @@ export const SAMPLE_HADITHS: Hadith[] = [
   { id: 'h7', text: 'كلمتان خفيفتان على اللسان، ثقيلتان في الميزان، حبيبتان إلى الرحمن: سبحان الله وبحمده، سبحان الله العظيم.', narrator: 'أبو هريرة رضي الله عنه', source: Source.BUKHARI, number: '6406', category: Category.WORSHIP, tags: ['الذكر'] },
   { id: 'h8', text: 'من كان يؤمن بالله واليوم الآخر فليقل خيرا أو ليصمت، ومن كان يؤمن بالله واليوم الآخر فليكرم جاره، ومن كان يؤمن بالله واليوم الآخر فليكرم ضيفه.', narrator: 'أبو هريرة رضي الله عنه', source: Source.AGREED, number: '6018', category: Category.MORALS, tags: ['الأخلاق'] },
   { id: 'h9', text: 'الدين النصيحة، قلنا: لمن؟ قال: لله ولكتابه ولرسوله ولأئمة المسلمين وعامتهم.', narrator: 'تميم الداري رضي الله عنه', source: Source.MUSLIM, number: '55', category: Category.GENERAL, tags: ['النصيحة'] },
-  { id: 'h10', text: 'سبعة يظلهم الله في ظله يوم لا ظل إلا ظله: إمام عادل، وشاب نشأ في عبادة الله، ورجل قلبه معلق بالمساجد، ورجلان تحابا في الله اجتمعا عليه وتفرقا عليه، ورجل طلبته امرأة ذات منصب وجمال فقال إني أخاف الله، ورجل تصدق بصدقة فأخفاها حتى لا تعلم شماله ما تنفق يمينه، ورجل ذكر الله خاليا ففاضت عيناه.', narrator: 'أبو هريرة رضي الله عنه', source: Source.AGREED, number: '660', category: Category.GENERAL, tags: ['القيامة'] }
+  { id: 'h10', text: 'سبعة يظلهم الله في ظله يوم لا ظل إلا ظله: إمام عادل، وشاب نشأ في عبادة الله، ورجل قلبه معلق بالمساجد، ورجلان تحابا في الله اجتمعا عليه وتفرقا عليه، ورجل طلبته امرأة ذات منصب وجمال فقال إني أخاف الله، ورجل تصدق بصدقة فأخفاها حتى لا تعلم شماله ما تنفق يمينه، ورجل ذكر الله خاليا ففاضت عيناه.', narrator: 'أبو هريرة رضي الله عنه', source: Source.AGREED, number: '660', category: Category.GENERAL, tags: ['القيامة'] },
+  // --- إضافة الأحاديث الجديدة ---
+  { id: 'h11', text: 'المؤمن القوي خير وأحب إلى الله من المؤمن الضعيف، وفي كل خير، احرص على ما ينفعك، واستعن بالله ولا تعجز.', narrator: 'أبو هريرة رضي الله عنه', source: Source.MUSLIM, number: '2664', category: Category.AQIDAH, tags: ['القوة', 'التوكل'] },
+  { id: 'h12', text: 'أن رجلاً قال للنبي صلى الله عليه وسلم: أوصني، قال: لا تغضب. فردد مراراً، قال: لا تغضب.', narrator: 'أبو هريرة رضي الله عنه', source: Source.BUKHARI, number: '6116', category: Category.MORALS, tags: ['الغضب', 'الوصية'] },
+  { id: 'h13', text: 'من كان يؤمن بالله واليوم الآخر فليصل رحمه.', narrator: 'أبو هريرة رضي الله عنه', source: Source.BUKHARI, number: '6138', category: Category.MORALS, tags: ['صلة الرحم'] },
+  { id: 'h14', text: 'خيركم من تعلم القرآن وعلمه.', narrator: 'عثمان بن عفان رضي الله عنه', source: Source.BUKHARI, number: '5027', category: Category.GENERAL, tags: ['القرآن', 'العلم'] },
+  { id: 'h15', text: 'اتق الله حيثما كنت، وأتبع السيئة الحسنة تمحها، وخالق الناس بخلق حسن.', narrator: 'أبو ذر الغفاري رضي الله عنه', source: Source.AGREED, number: '1987', category: Category.MORALS, tags: ['التقوى', 'الأخلاق'] },
+  { id: 'h16', text: 'إذا مات ابن آدم انقطع عمله إلا من ثلاث: صدقة جارية، أو علم ينتفع به، أو ولد صالح يدعو له.', narrator: 'أبو هريرة رضي الله عنه', source: Source.MUSLIM, number: '1631', category: Category.GENERAL, tags: ['الصدقة', 'العلم'] },
+  { id: 'h17', text: 'يسروا ولا تعسروا، وبشروا ولا تنفروا.', narrator: 'أنس بن مالك رضي الله عنه', source: Source.AGREED, number: '6125', category: Category.MORALS, tags: ['التيسير'] },
+  { id: 'h18', text: 'إن الله جميل يحب الجمال.', narrator: 'عبدالله بن مسعود رضي الله عنه', source: Source.MUSLIM, number: '91', category: Category.GENERAL, tags: ['الجمال'] },
+  { id: 'h19', text: 'تبسمك في وجه أخيك لك صدقة.', narrator: 'أبو ذر الغفاري رضي الله عنه', source: Source.AGREED, number: '1956', category: Category.MORALS, tags: ['التبسم', 'الصدقة'] },
+  { id: 'h20', text: 'من غش فليس منا.', narrator: 'أبو هريرة رضي الله عنه', source: Source.MUSLIM, number: '101', category: Category.TRANSACTIONS, tags: ['الأمانة', 'الغش'] },
+  { id: 'h21', text: 'والله في عون العبد ما كان العبد في عون أخيه.', narrator: 'أبو هريرة رضي الله عنه', source: Source.MUSLIM, number: '2699', category: Category.MORALS, tags: ['المساعدة'] },
+  { id: 'h22', text: 'من صلى البردين دخل الجنة.', narrator: 'أبو موسى الأشعري رضي الله عنه', source: Source.AGREED, number: '574', category: Category.WORSHIP, tags: ['الصلاة', 'الجنة'] },
+  { id: 'h23', text: 'الدعاء هو العبادة.', narrator: 'النعمان بن بشير رضي الله عنه', source: Source.AGREED, number: '3372', category: Category.WORSHIP, tags: ['الدعاء'] },
+  { id: 'h24', text: 'ليس الشديد بالصّرعة، إنما الشديد الذي يملك نفسه عند الغضب.', narrator: 'أبو هريرة رضي الله عنه', source: Source.AGREED, number: '6114', category: Category.MORALS, tags: ['الصبر', 'القوة'] },
+  { id: 'h25', text: 'أقرب ما يكون العبد من ربه وهو ساجد، فأكثروا الدعاء.', narrator: 'أبو هريرة رضي الله عنه', source: Source.MUSLIM, number: '482', category: Category.WORSHIP, tags: ['السجود'] },
+  { id: 'h26', text: 'كل مسكر خمر، وكل خمر حرام.', narrator: 'عبدالله بن عمر رضي الله عنهما', source: Source.MUSLIM, number: '2003', category: Category.GENERAL, tags: ['التحريم'] },
+  { id: 'h27', text: 'الطهور شطر الإيمان.', narrator: 'أبو مالك الأشعري رضي الله عنه', source: Source.MUSLIM, number: '223', category: Category.WORSHIP, tags: ['النظافة'] },
+  { id: 'h28', text: 'من صام رمضان ثم أتبعه بست من شوال كان كصيام الدهر.', narrator: 'أبو أيوب الأنصاري رضي الله عنه', source: Source.MUSLIM, number: '1164', category: Category.WORSHIP, tags: ['الصيام', 'شوال'] },
+  { id: 'h29', text: 'من قرأ حرفاً من كتاب الله فله به حسنة، والحسنة بعشر أمثالها.', narrator: 'عبدالله بن مسعود رضي الله عنه', source: Source.AGREED, number: '2910', category: Category.GENERAL, tags: ['القرآن', 'الأجر'] },
+  { id: 'h30', text: 'استوصوا بالنساء خيراً.', narrator: 'أبو هريرة رضي الله عنه', source: Source.AGREED, number: '3331', category: Category.MORALS, tags: ['النساء', 'الوصية'] }
 ];
 
 export const AUTHENTIC_REMEMBRANCES: Remembrance[] = [
@@ -31,7 +52,7 @@ export const AUTHENTIC_REMEMBRANCES: Remembrance[] = [
   // --- أدعية نبوية (جوامع الكلم) ---
   { id: 'gd-1', title: 'دعاء جامع', text: 'اللَّهُمَّ رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ.', benefit: 'كان أكثر دعاء النبي ﷺ.', count: 1, source: 'متفق عليه', category: 'general_dua' },
   { id: 'gd-2', title: 'الثبات على الدين', text: 'يَا مُقَلِّبَ الْقُلُوبِ ثَبِّتْ قَلْبِي عَلَى دِينِكَ.', benefit: 'كان النبي ﷺ يكثر من هذا الدعاء.', count: 1, source: 'الترمذي', category: 'general_dua' },
-  { id: 'gd-3', title: 'دعاء الكرب', text: 'لَا إِلَهَ إِلَّا اللَّهُ الْعَظِيمُ الْحَلِيمُ، لَا إِلَهَ إِلَّا اللَّهُ رَبُّ الْعَرْشِ الْعَظِيمِ، لَا إِلَهَ إِلَّا اللَّهُ رَبُّ السَّمَوَاتِ وَرَبُّ الْأَرْضِ وَرَبُّ الْعَرْشِ الْكَرِيمِ.', benefit: 'يقال عند الهم والغم والكرب.', count: 1, source: 'متفق عليه', category: 'general_dua' },
+  { id: 'gd-3', title: 'دعاء الكرب', text: 'لَا إِلَهَ إِلَّا اللَّهُ الْعَظِيمُ الْحَلِيمُ، لَا إِلَهَ إِلَّا اللَّهُ رَبُّ الْعَرْشِ الْعَظِيمِ، لَا إِلَهَ إِلَّا اللَّهُ رَبُّ السَّمَواتِ وَرَبُّ الْأَرْضِ وَرَبُّ الْعَرْشِ الْكَرِيمِ.', benefit: 'يقال عند الهم والغم والكرب.', count: 1, source: 'متفق عليه', category: 'general_dua' },
   { id: 'gd-4', title: 'طلب الهدى والتقى', text: 'اللَّهُمَّ إِنِّي أَسْأَلُكَ الْهُدَى وَالتُّقَى وَالْعَفَافَ وَالْغِنَى.', benefit: 'من جوامع دعاء النبي ﷺ.', count: 1, source: 'صحيح مسلم', category: 'general_dua' }
 ];
 
