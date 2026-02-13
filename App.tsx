@@ -7,8 +7,8 @@ import RemembranceSection from './components/RemembranceSection';
 import AdminPanel from './components/AdminPanel';
 import AuthModal from './components/AuthModal';
 import SiteFeedback from './components/SiteFeedback';
-import { Hadith, User, Remembrance, Source } from './types';
-import { Icons, SAMPLE_HADITHS, AUTHENTIC_REMEMBRANCES } from './constants';
+import { Hadith, User, Remembrance, Source, Surah } from './types';
+import { Icons, SAMPLE_HADITHS, AUTHENTIC_REMEMBRANCES, SURAHS } from './constants';
 import { searchAuthenticHadith } from './services/geminiService';
 import { 
   fetchHadithsFromFirebase, 
@@ -22,6 +22,9 @@ const App: React.FC = () => {
   const [favorites, setFavorites] = useState<string[]>([]);
   const [quranBookmarks, setQuranBookmarks] = useState<number[]>([]);
   const [remembranceFavs, setRemembranceFavs] = useState<string[]>([]);
+  
+  // حفظ كائنات الأحاديث المحفوظة (خاصة من نتائج البحث) لضمان ظهورها دائماً
+  const [favHadithsObjects, setFavHadithsObjects] = useState<Hadith[]>([]);
   
   const [allHadiths, setAllHadiths] = useState<Hadith[]>([]);
   const [allRemembrances, setAllRemembrances] = useState<Remembrance[]>([]);
@@ -37,6 +40,9 @@ const App: React.FC = () => {
   const [authModalInAdminMode, setAuthModalInAdminMode] = useState(false);
   
   const [user, setUser] = useState<User | null>(null);
+
+  // تبويب المفضلة النشط
+  const [activeFavTab, setActiveFavTab] = useState<'hadiths' | 'quran' | 'remembrances'>('hadiths');
 
   const loadInitialData = useCallback(async () => {
     setIsLoadingData(true);
@@ -78,6 +84,8 @@ const App: React.FC = () => {
       if (profile.favorites) setFavorites(profile.favorites);
       if (profile.quranBookmarks) setQuranBookmarks(profile.quranBookmarks);
       if (profile.remembranceFavs) setRemembranceFavs(profile.remembranceFavs);
+      // تحميل كائنات الأحاديث المحفوظة إذا كانت مخزنة في البروفايل
+      if (profile.favHadithsObjects) setFavHadithsObjects(profile.favHadithsObjects);
     }
   };
 
@@ -86,10 +94,11 @@ const App: React.FC = () => {
       syncUserProfile(user.name, {
         favorites,
         quranBookmarks,
-        remembranceFavs
+        remembranceFavs,
+        favHadithsObjects // مزامنة كائنات الأحاديث لضمان عدم ضياعها
       });
     }
-  }, [favorites, quranBookmarks, remembranceFavs, user]);
+  }, [favorites, quranBookmarks, remembranceFavs, favHadithsObjects, user]);
 
   const handleGlobalSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,13 +118,25 @@ const App: React.FC = () => {
     }
   };
 
-  const toggleFavorite = (id: string) => {
+  const toggleFavorite = (id: string, hadithObj?: Hadith) => {
     if (!user) {
       setAuthModalInAdminMode(false);
       setIsAuthModalOpen(true);
       return;
     }
-    setFavorites(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]);
+
+    const isFav = favorites.includes(id);
+    if (isFav) {
+      setFavorites(prev => prev.filter(f => f !== id));
+      setFavHadithsObjects(prev => prev.filter(h => h.id !== id));
+    } else {
+      setFavorites(prev => [...prev, id]);
+      // إذا كان الحديث قادماً من البحث، نحفظ الكائن كاملاً
+      const targetHadith = hadithObj || allHadiths.find(h => h.id === id) || searchResults.find(h => h.id === id);
+      if (targetHadith) {
+        setFavHadithsObjects(prev => [...prev, targetHadith]);
+      }
+    }
   };
 
   const handleNavChange = (page: string) => {
@@ -151,6 +172,15 @@ const App: React.FC = () => {
     }
     return list;
   }, [allHadiths, searchResults, sourceFilter, narratorFilter, searchQuery]);
+
+  // دمج الأحاديث الأساسية مع المحفوظة لضمان عرضها في صفحة المفضلة
+  const favoritesToDisplay = useMemo(() => {
+    const combined = [...allHadiths];
+    favHadithsObjects.forEach(fh => {
+      if (!combined.find(c => c.id === fh.id)) combined.push(fh);
+    });
+    return combined.filter(h => favorites.includes(h.id));
+  }, [allHadiths, favHadithsObjects, favorites]);
 
   const clearFilters = () => {
     setSourceFilter('all');
@@ -298,7 +328,7 @@ const App: React.FC = () => {
                         key={h.id}
                         hadith={h} 
                         isFavorite={favorites.includes(h.id)} 
-                        onToggleFavorite={toggleFavorite} 
+                        onToggleFavorite={(id) => toggleFavorite(id, h)} 
                         currentUser={user}
                         onNarratorClick={(n) => {
                           setNarratorFilter(n);
@@ -321,19 +351,131 @@ const App: React.FC = () => {
         {currentPage === 'remembrances' && <RemembranceSection favorites={remembranceFavs} onToggleFavorite={(id) => setRemembranceFavs(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id])} />}
         {currentPage === 'feedback' && <SiteFeedback currentUser={user} onOpenAuth={() => { setAuthModalInAdminMode(false); setIsAuthModalOpen(true); }} />}
         {currentPage === 'admin' && user?.isAdmin && <AdminPanel hadiths={allHadiths} remembrances={allRemembrances} onRefresh={loadInitialData} />}
+        
+        {/* صفحة المفضلة المطورة */}
         {currentPage === 'favorites' && (
-          <div className="max-w-5xl mx-auto space-y-8">
-            <h2 className="text-4xl font-black text-slate-900 text-center mb-10">المفضلة</h2>
-            <div className="grid grid-cols-1 gap-6">
-              {allHadiths.filter(h => favorites.includes(h.id)).map(h => (
-                <HadithCard key={h.id} hadith={h} isFavorite={true} onToggleFavorite={toggleFavorite} currentUser={user} onNarratorClick={(n) => { handleNavChange('home'); setNarratorFilter(n); }} />
+          <div className="max-w-5xl mx-auto space-y-12 pb-20 animate-in fade-in duration-700">
+            <div className="text-center space-y-4">
+              <h2 className="text-5xl md:text-6xl font-black text-slate-900">مكتبتي</h2>
+              <p className="text-slate-400 font-bold">كل ما قمت بحفظه من كنوز السنة والقرآن</p>
+            </div>
+
+            {/* أزرار التنقل بين أنواع المفضلات */}
+            <div className="flex justify-center gap-3 bg-white p-2 rounded-3xl border border-slate-100 shadow-sm w-fit mx-auto">
+              {[
+                { id: 'hadiths', label: 'أحاديث', count: favorites.length },
+                { id: 'quran', label: 'سور القرآن', count: quranBookmarks.length },
+                { id: 'remembrances', label: 'أذكار', count: remembranceFavs.length },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveFavTab(tab.id as any)}
+                  className={`px-8 py-3.5 rounded-2xl font-black text-base transition-all flex items-center gap-3 ${
+                    activeFavTab === tab.id 
+                    ? 'bg-primary-600 text-white shadow-lg shadow-primary-200' 
+                    : 'text-slate-500 hover:bg-slate-50'
+                  }`}
+                >
+                  {tab.label}
+                  <span className={`px-2 py-0.5 rounded-lg text-xs ${activeFavTab === tab.id ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-400'}`}>
+                    {tab.count}
+                  </span>
+                </button>
               ))}
+            </div>
+
+            <div className="space-y-8">
+              {activeFavTab === 'hadiths' && (
+                <div className="grid grid-cols-1 gap-6">
+                  {favoritesToDisplay.length > 0 ? (
+                    favoritesToDisplay.map(h => (
+                      <HadithCard 
+                        key={h.id} 
+                        hadith={h} 
+                        isFavorite={true} 
+                        onToggleFavorite={(id) => toggleFavorite(id)} 
+                        currentUser={user} 
+                        onNarratorClick={(n) => { 
+                          handleNavChange('search'); 
+                          setNarratorFilter(n); 
+                        }} 
+                      />
+                    ))
+                  ) : (
+                    <div className="text-center py-32 bg-white rounded-[3rem] border-2 border-dashed border-slate-100 space-y-4">
+                       <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto text-slate-200">
+                         <Icons.Heart filled />
+                       </div>
+                       <p className="text-slate-400 font-black text-xl">لا توجد أحاديث في المفضلة بعد</p>
+                       <button onClick={() => handleNavChange('search')} className="text-primary-600 font-bold hover:underline">تصفح الأحاديث الآن</button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeFavTab === 'quran' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {quranBookmarks.length > 0 ? (
+                    SURAHS.filter(s => quranBookmarks.includes(s.number)).map(surah => (
+                      <div key={surah.number} className="relative group">
+                         <button
+                          onClick={() => { handleNavChange('quran'); /* سيتم فتح السورة تلقائياً عبر Logic الـ QuranBrowser */ }}
+                          className="w-full bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all text-right"
+                        >
+                          <div className="flex justify-between items-center mb-4">
+                            <span className="text-slate-400 font-black">{surah.number}</span>
+                            <Icons.Book />
+                          </div>
+                          <h3 className="text-2xl font-serif font-black text-slate-800">سورة {surah.name}</h3>
+                          <p className="text-xs text-slate-400 mt-2 font-bold">{surah.numberOfAyahs} آية</p>
+                        </button>
+                        <button 
+                          onClick={() => setQuranBookmarks(prev => prev.filter(n => n !== surah.number))}
+                          className="absolute top-6 left-6 p-2 rounded-xl text-gold-500 bg-gold-50"
+                        >
+                          <Icons.Star filled />
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="col-span-full text-center py-32 bg-white rounded-[3rem] border-2 border-dashed border-slate-100 space-y-4">
+                       <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto text-slate-200">
+                         <Icons.Star filled />
+                       </div>
+                       <p className="text-slate-400 font-black text-xl">لا توجد سور محفوظة حالياً</p>
+                       <button onClick={() => handleNavChange('quran')} className="text-primary-600 font-bold hover:underline">اقرأ المصحف الكريم</button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeFavTab === 'remembrances' && (
+                <div className="grid grid-cols-1 gap-6">
+                  {remembranceFavs.length > 0 ? (
+                    allRemembrances.filter(r => remembranceFavs.includes(r.id)).map(r => (
+                      <RemembranceSection 
+                        key={r.id}
+                        favorites={remembranceFavs}
+                        onToggleFavorite={(id) => setRemembranceFavs(prev => prev.filter(f => f !== id))}
+                        initialTab={r.category}
+                      />
+                    ))
+                  ) : (
+                    <div className="text-center py-32 bg-white rounded-[3rem] border-2 border-dashed border-slate-100 space-y-4">
+                       <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto text-slate-200">
+                         <Icons.Sun />
+                       </div>
+                       <p className="text-slate-400 font-black text-xl">لا توجد أذكار محفوظة</p>
+                       <button onClick={() => handleNavChange('remembrances')} className="text-primary-600 font-bold hover:underline">اكتشف الأذكار والأدعية</button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}
       </main>
 
-      {/* الترس السري - مخفي تماماً (opacity-0) ويظهر بشفافية بسيطة جداً (hover:opacity-20) عند الحوم فوقه */}
       <button 
         onClick={handleAdminFabClick}
         className="fixed bottom-10 right-10 w-16 h-16 bg-white text-gold-600 rounded-3xl flex items-center justify-center z-50 transition-all opacity-0 hover:opacity-20 border-2 border-gold-100 shadow-xl cursor-pointer"
